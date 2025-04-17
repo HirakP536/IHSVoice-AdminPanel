@@ -516,11 +516,13 @@ function loginuser() {
         data.data.extension &&
         data.data.extension.length > 0
       ) {
+        let fullData = data;
         let sdata = data.data;
         let fullName = data.data.firstName + " " + data.data.lastName;
         let email = data.data.email;
         let userType = data.data.userType;
         console.log(userType);
+        localStorage.setItem("fullData", JSON.stringify(fullData));
         localStorage.setItem("sdata", JSON.stringify(sdata));
         localStorage.setItem("fullName", JSON.stringify(fullName));
         localStorage.setItem("email", JSON.stringify(email));
@@ -654,4 +656,5 @@ function loadScript(src) {
   script.defer = true;
   document.body.appendChild(script);
 }
+
 
