@@ -3,8 +3,13 @@
 }
 
 .active-menu {
-  background-color: #6b7a95;
-  color: #fff;
+  background-color: #ecf3ff;
+  color: #6e82ff;
+  border-radius: 5px;
+}
+.header{
+  background-color: white;
+  border-bottom: 1px solid #e4e7eb;
 }
 
 tr:nth-child(even) {
@@ -23,39 +28,6 @@ tbody {
   background-color: #fff;
 }
 
-.dark-mode tbody {
-  background-color: #3b3939;
-  color: #fff;
-}
-
-.dark-mode tr:nth-child(even) {
-  background-color: #989494;
-}
-
-.dark-mode tr:hover {
-  background-color: #504f4f;
-}
-
-thead {
-  background-color: #4a5568;
-  color: #fff;
-}
-
-body.dark-mode {
-  background-color: #121212;
-  color: #f1f1f1;
-}
-
-.dark-mode .card,
-.dark-mode .dropdown-menu {
-  background-color: #1e1e1e;
-  color: #f1f1f1;
-}
-
-.dark-mode header {
-  background-color: #434343;
-}
-
 /* Toggle Switch Styles */
 .form-check {
   position: relative;
@@ -69,7 +41,9 @@ body.dark-mode {
   opacity: 0;
   cursor: pointer;
 }
-
+.sidebar-text {
+  transition: opacity 0.3s, transform 0.3s;
+}
 .toggle {
   width: 60px;
   height: 30px;
@@ -78,7 +52,9 @@ body.dark-mode {
   position: relative;
   transition: background-color 0.3s;
 }
-
+#mainContent{
+  background-color: #f9fafb;
+}
 .toggle::before {
   content: "";
   position: absolute;
@@ -104,7 +80,8 @@ body.dark-mode {
 }
 
 .asideside {
-  background-color: #333232;
+  background-color: #ffffff;
+  border-right: 1px solid #e4e7eb;
 }
 
 .modal-content {
@@ -112,11 +89,39 @@ body.dark-mode {
   color: #000;
 }
 
-/*.dark .modal-content {*/
-/*  background-color: #121212;*/
-/*  color: #ffffff;*/
-/*}*/
+#userTable {
+  border-radius: 10px;
+  overflow: hidden;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+#userTable th,
+#userTable td {
+  border-left: none !important;
+  border-right: none !important;
+  border-top: none !important;
+  border-bottom: 1px solid #e4e7eb; /* Light grey bottom border */
+}
+  /* Style the Select2 container */
+  .select2-container {
+    width: 900px !important; /* Set the width of the Select2 dropdown */
+  }
 
+  /* Style the Select2 search bar */
+  .select2-container .select2-search input {
+    width: 100%; /* Ensure the search input takes the full width */
+    text-align: center; /* Center align the text inside the search box */
+  }
+
+  /* Style the Select2 dropdown text alignment */
+  /*.select2-container .select2-results__option {*/
+  /*  text-align: center; */
+  /*}*/
+
+  /* Optionally, adjust the width of the dropdown */
+  .select2-container .select2-dropdown {
+    width: 1225px !important; /* Match the dropdown width with the search bar width */
+  }
 .modal-header {
   border-bottom: 1px solid #444;
 }

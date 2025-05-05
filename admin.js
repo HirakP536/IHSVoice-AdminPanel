@@ -1,112 +1,20 @@
 // Toggle submenu with arrow rotation
+const fullData = JSON.parse(localStorage.getItem("fullData"));
+console.log(fullData);
 window.onload = function () {
   setActiveMenu("dashboard"); // Set default active menu
+
 };
-function setActiveMenu(menu) {
-  const menuItems = document.querySelectorAll("#sidebar a");
-  const profileDropdown = document.getElementById("profileDropdown");
-  menuItems.forEach((item) => {
-    item.classList.remove("active-menu"); // Remove active class from all items
-    if (item.getAttribute("data-menu") === menu) {
-      item.classList.add("active-menu"); // Add active class to the clicked item
-    }
-  });
-  // Close the profile dropdown if it's open
-  if (!profileDropdown.classList.contains("hidden")) {
-    profileDropdown.classList.add("hidden");
-  }
-}
-function toggleMenu(menuId, arrowId) {
-  const menu = document.getElementById(menuId);
-  const arrow = document.getElementById(arrowId);
-  menu.classList.toggle("hidden");
-  arrow.classList.toggle("rotate-180");
-}
-
-// Toggle profile dropdown
-function admintoggleProfile() {
-  const dropdown = document.getElementById("adminprofileDropdown");
-  dropdown.classList.toggle("hidden");
-
-  // Remove existing listener if any
-  document.removeEventListener("click", handleClickOutside);
-
-  if (!dropdown.classList.contains("hidden")) {
-    // Delay to allow the current click to finish
-    setTimeout(() => {
-      document.addEventListener("click", handleClickOutside);
-    }, 0);
-  }
-
-  function handleClickOutside(event) {
-    const profileBtn = document.getElementById("adminprofileButton"); // Assuming there's a button that triggers the dropdown
-    if (
-      !dropdown.contains(event.target) &&
-      !profileBtn.contains(event.target)
-    ) {
-      dropdown.classList.add("hidden");
-      document.removeEventListener("click", handleClickOutside);
-    }
-  }
-}
-function admintoggleTheme() {
-  const isDarkMode = document.body.classList.toggle("dark-mode");
-  const modals = document.querySelectorAll(".modal-content");
-  modals.forEach((modal) => {
-    if (isDarkMode) {
-      modal.style.backgroundColor = "#1e1e1e"; // Dark background
-      modal.style.color = "#f1f1f1"; // Light text
-    } else {
-      modal.style.backgroundColor = "#fff"; // Light background
-      modal.style.color = "#000"; // Dark text
-    }
-  });
-}
-function showadminSection(id) {
-  const sections = document.querySelectorAll(".section");
-  const menuItems = document.querySelectorAll("#sidebar a");
-  const companySelect = document.getElementById("companySelect");
-
-  sections.forEach((section) => section.classList.add("hidden"));
-  document.getElementById(id).classList.remove("hidden");
-
-  menuItems.forEach((item) => {
-    item.classList.remove("active-menu");
-    if (item.getAttribute("data-menu") === id) {
-      item.classList.add("active-menu");
-    }
-  });
-
-  // Hide companySelect when dashboard is active
-  if (id === "adminusers" || id === "adminextension") {
-    companySelect.classList.remove("hidden");
-  } else {
-    companySelect.classList.add("hidden");
-  }
-}
-const adminapiUrl = "http://172.31.199.45:5000";
-//const adminapiUrl = "https://voiceapi.shuklais.com";
+console.log("1")
+//const adminapiUrl = "http://172.31.199.45:5000";
+const adminapiUrl = "https://voiceapi.shuklais.com";
 // Optimized version of superadmin.js
 let tomSelectInstance;
 let userMap = new Map();
-const storedData = JSON.parse(localStorage.getItem("sdata"));
-const storedFullData = JSON.parse(localStorage.getItem("fullData"));
-console.log("full", storedFullData);
-const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
 
-document.getElementById("pprofileName").innerHTML = capitalize(
-  storedData.firstName
-);
-document.getElementById("pfullName").innerHTML = `${capitalize(
-  storedData.firstName
-)} ${capitalize(storedData.lastName)}`;
-document.getElementById("pemail").innerHTML = storedData.email;
-document.getElementById(
-  "companyName"
-).innerText = `Company: ${storedFullData.data.company.companyName}`;
 
-function fetchUsers() {
   const storedFullData = JSON.parse(localStorage.getItem("fullData"));
+  console.log("2",storedFullData)
   console.log(
     "Fetching extensions for:",
     storedFullData.data.company.companyName
@@ -123,6 +31,31 @@ function fetchUsers() {
       console.log("listing user", users);
     })
     .catch((error) => console.error("Error fetching users:", error));
+
+
+function fetchExt(selectedCompanyCode) {
+  const tenant = selectedCompanyCode;
+  const apiKey = "trL9cGpdP6WW9Y9z";
+  const extUrl = `https://sip5.houstonsupport.com/pbx/proxyapi.php?reqtype=INFO&tenant=${tenant}&format=json&key=${apiKey}&info=extensions`;
+
+  fetch(extUrl)
+    .then((response) => response.json())
+    .then((data) => {
+      extensionData = data.map((item) => ({
+        value132: item[132],
+      }));
+
+      const value132Set = [
+        ...new Set(extensionData.map((item) => item.value132)),
+      ];
+      const extensionCount = value132Set.length;
+      console.log("extensionCount",extensionCount)
+      const extCountElement = document.getElementById("extension-count");
+      if (extCountElement) {
+        extCountElement.textContent = extensionCount.toLocaleString();
+      }
+    })
+    .catch((error) => console.error("Error fetching extensions:", error));
 }
 
 function adminrenderUsers(users) {

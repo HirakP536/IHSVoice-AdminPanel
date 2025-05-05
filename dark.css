@@ -1,0 +1,231 @@
+body {
+    background-color: #101827;
+    color: #e0e6ed;
+  }
+  
+  .section {
+    margin-top: 0px !important;
+  }
+  
+  .active-menu {
+    background-color: #1e293b;
+    color: #6e82ff !important;
+    border-radius: 5px;
+  }
+  
+  .header {
+    background-color: #171f2e;
+    border-bottom: 1px solid #2c3a4b !important;
+  }
+  .header button{
+      color: white !important;
+  }
+  .whitebg{
+      color: white !important;
+  }
+  tr:nth-child(even) {
+    background-color: #1f2a3a;
+  }
+  
+  tr:hover {
+    background-color: #2a374a;
+  }
+  
+  thead tr:hover {
+    background-color: transparent;
+  }
+  
+  tbody {
+    background-color: #171f2e;
+    color: #e0e6ed;
+  }
+  
+  /* Toggle Switch Styles */
+  .form-check {
+    position: relative;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+  }
+  
+  .form-check-input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+  }
+  
+  .sidebar-text {
+    color: white;
+    transition: opacity 0.3s, transform 0.3s;
+  }
+  
+  .toggle {
+    width: 60px;
+    height: 30px;
+    background-color: #4b5563;
+    border-radius: 30px;
+    position: relative;
+    transition: background-color 0.3s;
+  }
+  
+  .toggle::before {
+    content: "";
+    position: absolute;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background-color: #101827;
+    top: 2px;
+    left: 2px;
+    transition: transform 0.3s;
+  }
+  
+  .form-check-input:checked + .toggle {
+    background-color: #10b981;
+  }
+  
+  .form-check-input:checked + .toggle::before {
+    transform: translateX(30px);
+  }
+  
+  .no-underline {
+    text-decoration: none;
+  }
+  
+  .asideside {
+    background-color: #171f2e;
+    border-right: 1px solid #1d2938;
+    
+  }
+  
+  .modal-content {
+    background-color: #1f2937;
+    color: #f1f5f9;
+  }
+  
+  #userTable {
+    border-radius: 10px;
+    overflow: hidden;
+    border-collapse: separate;
+    border-spacing: 0;
+    color: #e5e7eb;
+  }
+
+
+  
+  #userTable th,
+  #userTable td {
+    border-left: none !important;
+    border-right: none !important;
+    border-top: none !important;
+    border-bottom: 1px solid #2c3a4b;
+    background-color: #171f2e;
+    color: white;
+  }
+  
+  /* Style the Select2 container */
+  .select2-container {
+    width: 900px !important;
+    background-color: #1f2937;
+    color: #f3f4f6;
+    text-align: center;
+  }
+  
+  /* Style the Select2 search bar */
+  .select2-container .select2-search input {
+    /* border-bottom-left-radius:20px;
+    border-bottom-right-radius:20px; */
+    width: 100%;
+    background-color: #101827;
+    color: #ffffff;
+    border: 1px solid #374151;
+    text-align: center;
+  }
+  
+  /* Style the Select2 dropdown text alignment */
+  .select2-container .select2-results__option {
+    /*text-align: center;*/
+    background-color: #1e293b;
+    color: #e5e7eb;
+  }
+  
+  /* Optionally, adjust the width of the dropdown */
+  .select2-container .select2-dropdown {
+    width: 1225px !important;
+    background-color: #1f2937;
+    color: #f9fafb;
+  }
+
+  .select2-results__options::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .select2-results__options::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .select2-results__options::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+  }
+  
+  .modal-header {
+    border-bottom: 1px solid #444;
+  }
+  
+  .modal-body {
+    color: inherit;
+  }
+  
+  .modals {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(16, 24, 39, 0.7);
+    z-index: 999;
+  }
+  
+  .modals-content {
+    width: 75%;
+    max-width: 400px;
+    padding: 30px;
+    border-radius: 10px;
+    text-align: center;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #1f2937;
+    color: #e5e7eb;
+  }
+  #mainContent{
+    background-color: #101827;
+  }
+  .modals-content input {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 5px;
+    border: 1px solid #374151;
+    background: #171f2e;
+    color: #ffffff;
+  }
+  
+  .modals-content button {
+    background: #3b82f6;
+    color: white;
+    border-radius: 10px;
+    font-size: 20px;
+  }
+  
+  .modals-content button:hover {
+    background: #2563eb;
+  }
+  
+  .admin,
+  .superadmin {
+    display: contents !important;
+  }
+  
