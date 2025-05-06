@@ -666,9 +666,7 @@ function setupDashboard(userType) {
 
         <!-- Right: Theme + Sign Out -->
         <div class="d-flex align-items-center gap-3">
-            <div id="themeToggle" class="cursor-pointer fs-4" style="color: #0b3f65;">
-                <i id="themeIcon" class="fa-regular fa-sun whitebg"></i>
-            </div>
+            
             <button onclick="localStorage.clear(); location.reload();" class="btn btn-link p-0 text-dark fs-4">
                 <i class="fa fa-sign-out"></i>
             </button>
@@ -679,213 +677,141 @@ function setupDashboard(userType) {
     <!-- Topbar -->
     <!-- Main Content with all static HTML -->
     <main id="mainContent" class="p-4 flex-1 space-y-10 main">
-        <!-- Dashboard Section -->
-        <section id="dashboard" class="section">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="bg-white dark:bg-gray-800 p-3 shadow rounded-xl">
-                    <h4 class="text-gray-600 dark:text-gray-300">Users</h4>
-                    <p id="user-count" onclick="showSection('users')" class="text-2xl font-bold text-indigo-600" style="
-cursor: pointer;
-">Loading...</p>
+  <!-- Dashboard Section -->
+  <section id="dashboard" class="section">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="bg-white dark:bg-gray-800 p-3 shadow rounded-xl">
+        <h4 class="text-gray-600 dark:text-gray-300">Users</h4>
+        <p id="user-count" onclick="showSection('users')" class="text-2xl font-bold text-indigo-600" style="
+          cursor: pointer;
+          ">Loading...</p>
 
-                </div>
-                <div class="bg-white dark:bg-gray-800 p-3 shadow rounded-xl">
-                    <h4 class="text-gray-600 dark:text-gray-300">Extension</h4>
-                    <p id="extension-count" class="text-2xl font-bold text-green-600" style="
-cursor: pointer;
-">Loading...</p>
-                </div>
-                <div class="bg-white dark:bg-gray-800 p-3 shadow rounded-xl">
-                    <h4 class="text-gray-600 dark:text-gray-300">DIDs</h4>
-                    <p id="did-count" class="text-2xl font-bold text-blue-600" style="
-cursor: pointer;
-">Loading...</p>
-                </div>
-
-            
-            <div class="grid grid-cols-1 mt-4">
-                <div class="bg-white dark:bg-gray-800 p-3 shadow rounded-xl">
-                    <div class="container" style="max-width:100%;">
-                        <h2 class="mb-4">Call Data</h2>
-                        <!-- Date Pickers -->
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-3">
-                                <label for="startDate" class="form-label">Start Date</label>
-                                <input type="date" class="form-control" id="startDate">
-                            </div>
-                            <div class="col-md-3">
-                                <label for="endDate" class="form-label">End Date</label>
-                                <input type="date" class="form-control" id="endDate">
-                            </div>
-                            <div class="col-md-3 d-flex align-items-end">
-                                <button class="btn btn-primary w-100 mb-3" id="fetchCDR">Load Data</button>
-                            </div>
-                            <div class="col-md-3 d-flex align-items-end">
-                                <button class="btn btn-primary mb-3 w-100" id="handleDownload">Download Report</button>
-                            </div>
-                        </div>
-
-                    </div>
-
-                    <!-- 
-        <div class="container-fluid py-4"> -->
-                    <div class="row">
-
-                        <!-- Inbound Section -->
-                        <div class="col-md-6">
-                            <h5 class="mb-3" style="text-align:center">Inbound</h5>
-                            <div class="row g-3">
-                                <div class="col-6">
-                                    <div class="bg-white dark:bg-gray-800 p-3 shadow rounded-xl">
-                                        <h4 class="text-gray-600 dark:text-gray-300">Answered</h4>
-                                        <p id="in_ans" class="text-2xl font-bold text-blue-600">1</p>
-                                    </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="bg-white dark:bg-gray-800 p-3 shadow rounded-xl">
-                                        <h4 class="text-gray-600 dark:text-gray-300">Busy</h4>
-                                        <p id="in_busy" class="text-2xl font-bold text-blue-600">1</p>
-                                    </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="bg-white dark:bg-gray-800 p-3 shadow rounded-xl">
-                                        <h4 class="text-gray-600 dark:text-gray-300">Failed</h4>
-                                        <p id="in_fail" class="text-2xl font-bold text-blue-600">1</p>
-                                    </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="bg-white dark:bg-gray-800 p-3 shadow rounded-xl">
-                                        <h4 class="text-gray-600 dark:text-gray-300">Not Answered</h4>
-                                        <p id="in_not" class="text-2xl font-bold text-blue-600">1</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+      </div>
+      <div class="bg-white dark:bg-gray-800 p-3 shadow rounded-xl">
+        <h4 class="text-gray-600 dark:text-gray-300">Extension</h4>
+        <p id="extension-count" class="text-2xl font-bold text-green-600" style="
+          cursor: pointer;
+          ">Loading...</p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 p-3 shadow rounded-xl">
+        <h4 class="text-gray-600 dark:text-gray-300">DIDs</h4>
+        <p id="did-count" class="text-2xl font-bold text-blue-600" style="
+          cursor: pointer;
+          ">Loading...</p>
+      </div>
 
 
-                        <!-- Outbound Section -->
-                        <div class="col-md-6">
-                            <h5 class="mb-3" style="text-align:center">Outbound</h5>
-                            <div class="row g-3">
-                                <div class="col-6">
-                                    <div class="bg-white dark:bg-gray-800 p-3 shadow rounded-xl">
-                                        <h4 class="text-gray-600 dark:text-gray-300">Answered</h4>
-                                        <p id="out_ans" class="text-2xl font-bold text-blue-600">1</p>
-                                    </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="bg-white dark:bg-gray-800 p-3 shadow rounded-xl">
-                                        <h4 class="text-gray-600 dark:text-gray-300">Busy</h4>
-                                        <p id="out_busy" class="text-2xl font-bold text-blue-600">1</p>
-                                    </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="bg-white dark:bg-gray-800 p-3 shadow rounded-xl">
-                                        <h4 class="text-gray-600 dark:text-gray-300">Failed</h4>
-                                        <p id="out_fail" class="text-2xl font-bold text-blue-600">1</p>
-                                    </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="bg-white dark:bg-gray-800 p-3 shadow rounded-xl">
-                                        <h4 class="text-gray-600 dark:text-gray-300">Not Answered</h4>
-                                        <p id="out_not" class="text-2xl font-bold text-blue-600">1</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-            </div>
-
-
-            <div class="grid grid-cols-1 mt-4">
-                <div class="grid grid-cols-1 mt-4">
-                    <div class="bg-white dark:bg-gray-800 p-3 shadow rounded-xl">
-                        <div class="d-flex flex-wrap gap-3 mb-3">
-                            <!-- Filters -->
-                            <div>
-                                <label class="form-label mb-1">Status</label>
-                                <select id="dispositionFilter" class="form-select">
-                                    <option value="">All</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="form-label mb-1">Caller</label>
-                                <select id="srcFilter" class="form-select">
-                                    <option value="">All</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="form-label mb-1">Call Type</label>
-                                <select id="directionFilter" class="form-select">
-                                    <option value="">All</option>
-                                    <option value="Outbound">Outbound</option>
-                                    <option value="Inbound">Inbound</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
-
-                            <table class="table table-bordered" id="combinedTable">
-                                <thead class="table-light" style="
-                                    position: sticky;
-                                    top: 0;
-                                    z-index: 1; /* Ensure it stays above other rows */
-                                    background-color: white;
-                                ">
-                                    <tr>
-                                        <th>Caller ID</th>
-                                        <th>Caller</th>
-                                        <th>Receiver</th>
-                                        <th>Date &amp; Time</th>
-                                        <th>Status</th>
-                                        <th>Call Type</th>
-                                    </tr>
-                                </thead>
-                                <tbody></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    </div>
+    <div class="grid grid-cols-1 mt-2 col-12">
+      <div class="bg-white dark:bg-gray-800 p-3 shadow rounded-xl mt-2">
+        <div class="container" style="max-width:100%;">
+          <h2 class="mb-4">Call Stats</h2>
+          <div class="row">
+            <div class="col-md-3"><label for="startDate" class="form-label">Start Date</label><input type="date"
+                class="form-control" id="startDate"></div>
+            <div class="col-md-3"><label for="endDate" class="form-label">End Date</label><input type="date"
+                class="form-control" id="endDate"></div>
+            <div class="col-md-3 d-flex align-items-end"><button class="btn btn-primary w-100 mb-3" id="fetchCDR">Load
+                Data</button></div>
+            <div class="col-md-3 d-flex align-items-end"><button class="btn btn-primary mb-3 w-100"
+                id="handleDownload">Download Report</button></div>
+          </div>
         </div>
-        </section>
-        <!-- Users Section -->
-        <section id="users" class="section hidden">
-            <div class="flex justify-between items-center mb-2">
-                <!-- Search Bar -->
-                <input type="text" id="searchInput" class="form-control w-64" style="width: 89% !important;"
-                    placeholder="Search...">
-                <!-- Add User Button -->
-                <button id="openAddUserModal"
-                    class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 dark:bg-indigo-700 dark:hover:bg-indigo-600">
-                    Add User
-                </button>
+      </div>
+      <!-- 
+      <div class="container-fluid py-4"> -->
+      <div class="bg-white dark:bg-gray-800 p-3 shadow rounded-xl mt-2">
+
+        <div class="row">
+
+          <div class="grid grid-cols-1 mt-2">
+            <div class="d-flex flex-wrap gap-3 mb-3">
+              <!-- Filters -->
+              <div>
+                <label class="form-label mb-1">Status</label>
+                <select id="dispositionFilter" class="form-select">
+                  <option value="">All</option>
+                </select>
+              </div>
+              <div>
+                <label class="form-label mb-1">Caller</label>
+                <select id="srcFilter" class="form-select">
+                  <option value="">All</option>
+                </select>
+              </div>
+              <div>
+                <label class="form-label mb-1">Call Type</label>
+                <select id="directionFilter" class="form-select">
+                  <option value="">All</option>
+                  <option value="Outbound">Outbound</option>
+                  <option value="Inbound">Inbound</option>
+                </select>
+              </div>
             </div>
+          </div>
+        </div>
 
-            <div class="table-responsive">
-                <table class="table table-bordered" id="userTable">
-                    <thead class="table-light">
-                        <tr>
-                            <th class="text-center px-4 py-2 fcolor">First Name</th>
-                            <th class="text-center px-4 py-2 fcolor">Last Name</th>
-                            <th class="text-center px-4 py-2 fcolor">Email</th>
-                            <th class="text-center px-4 py-2 fcolor">User Type</th>
-                            <th class="text-center px-4 py-2 fcolor">Is Active</th>
-                            <th class="text-center px-4 py-2 fcolor">Extension Name</th>
-                            <th class="text-center px-4 py-2 fcolor">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody">
-                        <!-- Table rows from API response will be inserted here -->
-                    </tbody>
-                </table>
+        <div class="row">
+          <div class="col-12">
+            <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+              <table class="table table-bordered" id="combinedTable">
+                <thead class="table-light" style="
+                                position: sticky;
+                                top: 0;
+                                z-index: 1; /* Ensure it stays above other rows */
+                                background-color: white;
+                            ">
+                  <tr>
+                    <th>Caller ID</th>
+                    <th>Caller</th>
+                    <th>Receiver</th>
+                    <th>Date &amp; Time</th>
+                    <th>Status</th>
+                    <th>Call Type</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
             </div>
-        </section>
+          </div>
+        </div>
+      </div>
+  </section>
+  <!-- Users Section -->
+  <section id="users" class="section hidden">
+    <div class="flex justify-between items-center mb-2">
+      <!-- Search Bar -->
+      <input type="text" id="searchInput" class="form-control w-64" style="width: 89% !important;"
+        placeholder="Search...">
+      <!-- Add User Button -->
+      <button id="openAddUserModal"
+        class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 dark:bg-indigo-700 dark:hover:bg-indigo-600">
+        Add User
+      </button>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-bordered" id="userTable">
+        <thead class="table-light">
+          <tr>
+            <th class="text-center px-4 py-2 fcolor">First Name</th>
+            <th class="text-center px-4 py-2 fcolor">Last Name</th>
+            <th class="text-center px-4 py-2 fcolor">Email</th>
+            <th class="text-center px-4 py-2 fcolor">User Type</th>
+            <th class="text-center px-4 py-2 fcolor">Is Active</th>
+            <th class="text-center px-4 py-2 fcolor">Extension Name</th>
+            <th class="text-center px-4 py-2 fcolor">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+          <!-- Table rows from API response will be inserted here -->
+        </tbody>
+      </table>
+    </div>
+  </section>
 
 
-    </main>
+</main>
 
     <!-- Add User Modal -->
     <div class="modal fade dark-mode" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel"
@@ -1184,12 +1110,23 @@ cursor: pointer;
       //   return;
       // }
 
-      const today = new Date();
-      const yesterday = new Date(today);
-      yesterday.setDate(today.getDate() - 1);
+      const startDateInput = document.getElementById("startDate").value;
+      const endDateInput = document.getElementById("endDate").value;
 
-      const startDate = yesterday.toISOString().split("T")[0];
-      const endDate = today.toISOString().split("T")[0];
+      let startDate, endDate;
+
+      if (startDateInput && endDateInput) {
+        startDate = startDateInput;
+        endDate = endDateInput;
+      } else {
+        const today = new Date();
+        const yesterday = new Date(today);
+        yesterday.setDate(today.getDate() - 1);
+
+        startDate = yesterday.toISOString().split("T")[0];
+        endDate = today.toISOString().split("T")[0];
+      }
+
       console.log("Fetching data from:", startDate, "to:", endDate);
       const start = `${startDate} 00:00`;
       const end = `${endDate} 23:59`;
@@ -1206,7 +1143,7 @@ cursor: pointer;
           const filteredSrc = realsrc ? realsrc.split("-")[0].trim() : realsrc;
 
           return {
-          clid: row.clid,
+          clid: row.clid.replace(/["<>]/g, '').replace(/\s+</, ' - '),
           realsrc: filteredSrc,
           firstdst: row.firstdst,
           start: row.start,
