@@ -219,8 +219,6 @@ function toggleSidebar() {
   });
 }
 
-
-
 // Function to toggle password visibility
 function togglePasswordVisibility(inputId) {
   const input = document.getElementById(inputId);
@@ -699,57 +697,65 @@ function setupDashboard(userType) {
           cursor: pointer;
           ">Loading...</p>
       </div>
-
-
     </div>
+     <div class="bg-white dark:bg-gray-800 p-3 shadow rounded-xl mt-2">
+        <div class="row">
+          <div>
+          <label for="predefinedRange">Select Range: </label>
+            <select id="predefinedRange">
+              <option value="">-- Choose --</option>
+              <option value="today" selected>Today</option>
+              <option value="yesterday">Yesterday</option>
+              <option value="thisWeek">This Week</option>
+              <option value="thisMonth">This Month</option>
+            </select>
+            <label for="startDate">Start Date:</label>
+            <input type="date" id="startDate">
+            <label for="endDate">End Date:</label>
+            <input type="date" id="endDate">
+            <label for="extensionFilter">Extension:</label>
+            <select id="extensionFilter" onchange="applyFilters()">
+              <option value="">All</option>
+            </select>
+
+            <label for="directionFilter">Direction:</label>
+            <select id="directionFilter" onchange="applyFilters()">
+              <option value="">All</option>
+              <option value="IN">IN</option>
+              <option value="OUT">OUT</option>
+            </select>
+
+            <label for="statusFilter">Status:</label>
+            <select id="statusFilter" onchange="applyFilters()">
+              <option value="">All</option>
+            </select>
+
+            <label>
+              <input type="checkbox" id="hideVoicemail" checked onchange="applyFilters()">
+              Hide Voicemail
+            </label>
+       
+            
+            <button onclick="filterByDate()" class="btn btn-outline-dark">Apply</button>
+          </div>
+        </div>
+        </div>
     <div class="grid grid-cols-1 mt-2 col-12">
       <div class="bg-white dark:bg-gray-800 p-3 shadow rounded-xl mt-2">
-        <div class="container" style="max-width:100%;">
-          <h2 class="mb-4">Call Stats</h2>
-          <div class="row">
-            <div class="col-md-3"><label for="startDate" class="form-label">Start Date</label><input type="date"
-                class="form-control" id="startDate"></div>
-            <div class="col-md-3"><label for="endDate" class="form-label">End Date</label><input type="date"
-                class="form-control" id="endDate"></div>
-            <div class="col-md-3 d-flex align-items-end"><button class="btn btn-primary w-100 mb-3" id="fetchCDR">Load
-                Data</button></div>
-            <div class="col-md-3 d-flex align-items-end"><button class="btn btn-primary mb-3 w-100"
-                id="handleDownload">Download Report</button></div>
-          </div>
-        </div>
+    <div style="display: flex; gap: 20px; margin-top: 20px;">
+  <div style="flex: 1;">
+    <h3>Inbound Calls</h3>
+    <canvas id="inboundChart"></canvas>
+  </div>
+  <div style="flex: 1;">
+    <h3>Outbound Calls</h3>
+    <canvas id="outboundChart"></canvas>
+  </div>
+</div>
+
       </div>
-      <!-- 
-      <div class="container-fluid py-4"> -->
+     
       <div class="bg-white dark:bg-gray-800 p-3 shadow rounded-xl mt-2">
-
-        <div class="row">
-
-          <div class="grid grid-cols-1 mt-2">
-            <div class="d-flex flex-wrap gap-3 mb-3">
-              <!-- Filters -->
-              <div>
-                <label class="form-label mb-1">Status</label>
-                <select id="dispositionFilter" class="form-select">
-                  <option value="">All</option>
-                </select>
-              </div>
-              <div>
-                <label class="form-label mb-1">Caller</label>
-                <select id="srcFilter" class="form-select">
-                  <option value="">All</option>
-                </select>
-              </div>
-              <div>
-                <label class="form-label mb-1">Call Type</label>
-                <select id="directionFilter" class="form-select">
-                  <option value="">All</option>
-                  <option value="Outbound">Outbound</option>
-                  <option value="Inbound">Inbound</option>
-                </select>
-              </div>
-            </div>
-          </div>
-        </div>
 
         <div class="row">
           <div class="col-12">
@@ -762,20 +768,24 @@ function setupDashboard(userType) {
                                 background-color: white;
                             ">
                   <tr>
-                    <th>Caller ID</th>
-                    <th>Caller</th>
+                    <th>Extension</th>
+                    <th>Caller Name</th>
+                    <th>Caller Number</th>
                     <th>Receiver</th>
-                    <th>Date &amp; Time</th>
+                    <th>Date & Time</th>
+                    <th>Duration</th>
+                    <th>Direction</th>
                     <th>Status</th>
-                    <th>Call Type</th>
                   </tr>
                 </thead>
-                <tbody></tbody>
+                <tbody id="call-logs-body">
+                </tbody>
               </table>
             </div>
           </div>
         </div>
       </div>
+      
   </section>
   <!-- Users Section -->
   <section id="users" class="section hidden">
@@ -812,7 +822,6 @@ function setupDashboard(userType) {
 
 
 </main>
-
     <!-- Add User Modal -->
     <div class="modal fade dark-mode" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel"
         aria-hidden="true">
@@ -978,9 +987,9 @@ function setupDashboard(userType) {
 
     let userMap = new Map();
     const fullData = JSON.parse(localStorage.getItem("fullData"));
-    //console.log(fullData);
-
-    //To fetch company list
+    let inboundChartInstance;
+    let outboundChartInstance;
+    
     fetch(`${apiUrl}/company/listCompany`)
       .then((res) => res.json())
       .then((data) => {
@@ -1020,19 +1029,24 @@ function setupDashboard(userType) {
 
         // Handle change event
         $select.on("change", function () {
+          localStorage.setItem("companyCode", " ");
           const selectedOption = this.options[this.selectedIndex];
           const selectedId = selectedOption.dataset.id;
           const selectedCompanyCode = this.value;
-
+          // fetchData(selectedCompanyCode)
           fetchUsers(selectedCompanyCode);
+          fetchExt(selectedCompanyCode);
+          fetchDid(selectedCompanyCode);
           //console.log("selectedCompanyCode", selectedCompanyCode);
           localStorage.setItem("selectedCompanyCode", selectedCompanyCode);
           localStorage.setItem("companyCode", selectedCompanyCode);
+          console.log("selectedCompanyCode", selectedCompanyCode);
           localStorage.setItem("companyId", selectedId);
         });
       })
       .catch((error) => console.error("Error fetching companies:", error));
 
+    // Function to fetch users based on selected company code
     function fetchUsers(selectedCompanyCode) {
       localStorage.setItem;
       //console.log("Fetching extensions for:", selectedCompanyCode);
@@ -1052,9 +1066,11 @@ function setupDashboard(userType) {
           fetchExt(selectedCompanyCode);
           // fetchCDR(selectedCompanyCode)
           fetchDid(selectedCompanyCode);
+          // fetchData(selectedCompanyCode);
         })
         .catch((error) => console.error("Error fetching users:", error));
     }
+    // Fetch extensions to display them on dashboard
     function fetchExt(selectedCompanyCode) {
       const tenant = selectedCompanyCode;
       const apiKey = fullData.apikey;
@@ -1079,6 +1095,7 @@ function setupDashboard(userType) {
         })
         .catch((error) => console.error("Error fetching extensions:", error));
     }
+    // Fetch dids to display them on dashboard
     function fetchDid(selectedCompanyCode) {
       const tenant = selectedCompanyCode;
       const apiKey = fullData.apikey; // Replace with real key
@@ -1101,379 +1118,329 @@ function setupDashboard(userType) {
           console.error("Error fetching DIDs:", error);
         });
     }
-   
-      const apiKey = fullData?.apikey;
-      const tenant = localStorage.getItem("companyCode");
 
-      // if (!tenant) {
-      //   console.error("Tenant not found in localStorage. Data fetch aborted.");
-      //   return;
-      // }
+    const apiKey = fullData?.apikey;
+    const tenant = localStorage.getItem("companyCode");
+    console.log("tenant", tenant);
 
-      const startDateInput = document.getElementById("startDate").value;
-      const endDateInput = document.getElementById("endDate").value;
+    let statusByDateChartInstance;
 
-      let startDate, endDate;
-
-      if (startDateInput && endDateInput) {
-        startDate = startDateInput;
-        endDate = endDateInput;
-      } else {
+    let originalData = [];
+    const isLoader = "true";
+    document
+      .getElementById("predefinedRange")
+      .addEventListener("change", function () {
         const today = new Date();
-        const yesterday = new Date(today);
-        yesterday.setDate(today.getDate() - 1);
+        let start, end;
 
-        startDate = yesterday.toISOString().split("T")[0];
-        endDate = today.toISOString().split("T")[0];
+        switch (this.value) {
+          case "today":
+            start = new Date(
+              today.getFullYear(),
+              today.getMonth(),
+              today.getDate()
+            );
+            end = new Date(); // current time
+            break;
+          case "yesterday":
+            start = end = new Date(
+              today.getFullYear(),
+              today.getMonth(),
+              today.getDate() - 1
+            );
+            break;
+          case "thisWeek":
+            const firstDayOfWeek = new Date(
+              today.setDate(today.getDate() - today.getDay())
+            );
+            start = new Date(
+              firstDayOfWeek.getFullYear(),
+              firstDayOfWeek.getMonth(),
+              firstDayOfWeek.getDate()
+            );
+            end = new Date();
+            break;
+          case "thisMonth":
+            start = new Date(today.getFullYear(), today.getMonth(), 1);
+            end = new Date();
+            break;
+          default:
+            return;
+        }
+
+        document.getElementById("startDate").value = formatDate(start);
+        document.getElementById("endDate").value = formatDate(end);
+
+        filterByDate(); // Automatically fetch data
+      });
+
+    function formatDate(date) {
+      return date.toISOString().split("T")[0];
+    }
+    function filterByDate() {
+      const start = document.getElementById("startDate").value;
+      const end = document.getElementById("endDate").value;
+
+      if (!start || !end) {
+        alert("Please select both start and end dates.");
+        return;
       }
 
-      console.log("Fetching data from:", startDate, "to:", endDate);
-      const start = `${startDate} 00:00`;
-      const end = `${endDate} 23:59`;
-      const url = `https://sip5.houstonsupport.com/pbx/proxyapi.php?reqtype=INFO&info=cdrs&tenant=${tenant}&key=${apiKey}&format=json&start=${encodeURIComponent(
-      start
-      )}&end=${encodeURIComponent(end)}`;
+      const selectedRange = document.getElementById("predefinedRange").value;
+      let startDateTime = `${start} 00:00`;
+      let endDateTime;
 
-      fetch(url)
-      .then((res) => res.json())
-      .then((data) => {
-        const parsed = data
-        .map((row) => {
-          let realsrc = row.realsrc || row.wherelanded;
-          const filteredSrc = realsrc ? realsrc.split("-")[0].trim() : realsrc;
-
-          return {
-          clid: row.clid.replace(/["<>]/g, '').replace(/\s+</, ' - '),
-          realsrc: filteredSrc,
-          firstdst: row.firstdst,
-          start: row.start,
-          disposition: row.disposition,
-          userfield: row.userfield,
-          direction: row.userfield === "[outbound]" ? "Outbound" : "Inbound",
-          };
-        })
-        .filter(
-          (row) =>
-          row.realsrc &&
-          row.realsrc.toLowerCase() !== "n/a" &&
-          (!/^\d+$/.test(row.realsrc) || row.realsrc.length <= 6)
-        );
-
-        currentData = parsed;
-        renderTable(parsed);
-      })
-      .catch((error) => {
-        console.error("Error fetching CDR data:", error);
-      });
-    
-
-    // Fetch data based on date picker when the button is clicked
-    document.getElementById("fetchCDR").onclick = function () {
-      const apiKey = fullData.apikey;
-      const tenant = localStorage.getItem("companyCode");
-      const startDate = document.getElementById("startDate").value;
-      const endDate = document.getElementById("endDate").value;
-
-      if (!startDate || !endDate) {
-      alert("Please select both start and end dates.");
-      return;
+      if (selectedRange === "today") {
+        const now = new Date();
+        const hours = now.getHours().toString().padStart(2, "0");
+        const minutes = now.getMinutes().toString().padStart(2, "0");
+        endDateTime = `${end} ${hours}:${minutes}`;
+      } else {
+        endDateTime = `${end} 23:59`;
       }
 
-      const start = `${startDate} 00:00`;
-      const end = `${endDate} 23:59`;
-      const url = `https://sip5.houstonsupport.com/pbx/proxyapi.php?reqtype=INFO&info=cdrs&tenant=${tenant}&key=${apiKey}&format=json&start=${encodeURIComponent(
-      start
-      )}&end=${encodeURIComponent(end)}`;
+      fetchData(startDateTime, endDateTime);
+    }
+    // Attach to the global window object
+    window.filterByDate = filterByDate;
+    function fetchData(startDateTime, endDateTime) {
+      const url = `https://sip5.houstonsupport.com/pbx/proxyapi.php?reqtype=INFO&info=cdrs&tenant=gmd&key=trL9cGpdP6WW9Y9z&format=json&start=${encodeURIComponent(
+        startDateTime
+      )}&end=${encodeURIComponent(endDateTime)}`;
 
       fetch(url)
-      .then((res) => res.json())
-      .then((data) => {
-        const parsed = data
-        .map((row) => {
-          let realsrc = row.realsrc || row.wherelanded;
-          const filteredSrc = realsrc ? realsrc.split("-")[0].trim() : realsrc;
+        .then((res) => res.json())
+        .then((data) => {
+          console.log("API response:", data);
+          renderTable(data);
 
-          return {
-          clid: row.clid,
-          realsrc: filteredSrc,
-          firstdst: row.firstdst,
-          start: row.start,
-          disposition: row.disposition,
-          userfield: row.userfield,
-          direction: row.userfield === "[outbound]" ? "Outbound" : "Inbound",
-          };
+          const start = startDateTime.split(" ")[0];
+          const end = endDateTime.split(" ")[0];
+          renderSeparateDirectionCharts(data, start.split(' ')[0], end.split(' ')[0]);
+
         })
-        .filter(
-          (row) =>
-          row.realsrc &&
-          row.realsrc.toLowerCase() !== "n/a" &&
-          (!/^\d+$/.test(row.realsrc) || row.realsrc.length <= 6)
-        );
+        .catch((err) => console.error("API error:", err));
+    }
 
-        currentData = parsed;
-        renderTable(parsed);
-      })
-      .catch((error) => {
-        console.error("Error fetching CDR data:", error);
-      });
-    };
+    function parseCallerName(clid) {
+      if (!clid) {
+        return "-"; // If clid is undefined or null, return '-'
+      }
+      const match = clid.match(/"([^"]+)"/);
+      return match ? match[1] : "-"; // If a match is found, return the caller name, otherwise return '-'
+    }
+    function extractNumber(value) {
+      // Match only digits (numbers)
+      const match = value.match(/\d+/);
+      return match ? match[0] : "-"; // Return the first match or '-' if no match
+    }
 
     function renderTable(data) {
-      populateFilters(data);
-
-      function applyFilters() {
-        const disposition = document.getElementById("dispositionFilter").value;
-        const src = document.getElementById("srcFilter").value;
-        const direction = document.getElementById("directionFilter").value;
-
-        const filtered = data.filter(
-          (row) =>
-            (!disposition || row.disposition === disposition) &&
-            (!src || row.realsrc === src) &&
-            (!direction || row.direction === direction)
-        );
-
-        const tableBody = document
-          .getElementById("combinedTable")
-          .querySelector("tbody");
-        tableBody.innerHTML = "";
-        filtered.forEach((row) => {
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
-              <td>${row.clid}</td>
-              <td>${row.realsrc}</td>
-              <td>${row.firstdst}</td>
-              <td>${row.start}</td>
-              <td>${row.disposition}</td>
-              <td>${row.direction}</td>
-            `;
-          tableBody.appendChild(tr);
-        });
-
-        // Update individual disposition counts
-        const callCountDiv = document.getElementById("callCount");
-        const dispositionsMap = {};
-
-        filtered.forEach((row) => {
-          if (!dispositionsMap[row.disposition]) {
-            dispositionsMap[row.disposition] = {
-              total: 0,
-              inbound: 0,
-              outbound: 0,
-            };
-          }
-          dispositionsMap[row.disposition].total++;
-          if (row.direction === "Inbound") {
-            dispositionsMap[row.disposition].inbound++;
-          } else if (row.direction === "Outbound") {
-            dispositionsMap[row.disposition].outbound++;
-          }
-        });
-
-        let html = "<ul style='padding-left: 20px;'>";
-        for (const [disp, counts] of Object.entries(dispositionsMap)) {
-          html += `
-              <li title="Inbound: ${counts.inbound} calls, Outbound: ${counts.outbound} calls">
-                ${disp}: ${counts.total} calls
-              </li>
-            `;
-        }
-        html += "</ul>";
-
-        callCountDiv.innerHTML = html;
+      if (!Array.isArray(data)) {
+        console.error("Expected an array of call logs, but got:", data);
+        return;
       }
 
-      // Bind filters
-      ["dispositionFilter", "srcFilter", "directionFilter"].forEach((id) => {
-        document.getElementById(id).onchange = applyFilters;
+      originalData = data; // Save full data for filtering
+
+      // Populate filter dropdowns (filtered list)
+      const extSet = new Set();
+      const statusSet = new Set();
+
+      const hideVoicemail = document.getElementById("hideVoicemail").checked;
+
+      data.forEach((item) => {
+        let callerExtRaw =
+          item.userfield === "[inbound]"
+            ? item.wherelanded
+            : extractNumber(item.realsrc);
+        let callerExt = callerExtRaw || "N/A";
+        if (callerExt === "N/A") return;
+
+        if (!hideVoicemail || !callerExt.toLowerCase().includes("voicemail")) {
+          extSet.add(callerExt);
+        }
+
+        statusSet.add(item.disposition || "-");
       });
 
-      // Initial render
+      const extFilter = document.getElementById("extensionFilter");
+      const statusFilter = document.getElementById("statusFilter");
+
+      extFilter.innerHTML = '<option value="">All</option>';
+      statusFilter.innerHTML = '<option value="">All</option>';
+
+      extSet.forEach(
+        (ext) =>
+          (extFilter.innerHTML += `<option value="${ext}">${ext}</option>`)
+      );
+      statusSet.forEach(
+        (status) =>
+          (statusFilter.innerHTML += `<option value="${status}">${status}</option>`)
+      );
+
       applyFilters();
     }
 
-    function populateFilters(data) {
-      const dispositions = [...new Set(data.map((row) => row.disposition))];
-      const sources = [
-        ...new Set(
-          data
-            .map((row) => row.realsrc)
-            .filter(
-              (src) =>
-                src &&
-                src.toLowerCase() !== "n/a" &&
-                (!/^\d+$/.test(src) || src.length <= 6)
-            )
-        ),
-      ];
+    function applyFilters() {
+      const extVal = document.getElementById("extensionFilter").value;
+      const dirVal = document.getElementById("directionFilter").value;
+      const statusVal = document.getElementById("statusFilter").value;
+      const hideVoicemail = document.getElementById("hideVoicemail").checked;
 
-      const dispositionSelect = document.getElementById("dispositionFilter");
-      const srcSelect = document.getElementById("srcFilter");
+      const filtered = originalData.filter((item) => {
+        let callerExtRaw =
+          item.userfield === "[inbound]"
+            ? item.wherelanded
+            : extractNumber(item.realsrc);
+        let callerExt = callerExtRaw || "N/A";
+        if (callerExt === "N/A") return false;
 
-      // Clear existing options except 'All'
-      [dispositionSelect, srcSelect].forEach((select) => {
-        while (select.options.length > 1) select.remove(1);
-      });
+        if (hideVoicemail && callerExt.toLowerCase().includes("voicemail"))
+          return false;
 
-      dispositions.forEach((val) =>
-        dispositionSelect.add(new Option(val, val))
-      );
-      sources.forEach((val) => srcSelect.add(new Option(val, val)));
-    }
+        let direction =
+          item.userfield === "[inbound]"
+            ? "IN"
+            : item.userfield === "[outbound]"
+            ? "OUT"
+            : "-";
+        let status = item.disposition || "-";
 
-    function generateReportData(data) {
-      const report = {};
-
-      data
-        .filter(
-          (row) =>
-            row.realsrc &&
-            row.realsrc.toLowerCase() !== "n/a" &&
-            (!/^\d+$/.test(row.realsrc) || row.realsrc.length <= 6)
-        )
-        .forEach((row) => {
-          const source = row.realsrc || "Unknown";
-          const direction = row.direction; // 'Inbound' or 'Outbound'
-          const disposition = row.disposition || "Unknown";
-
-          if (!report[source]) {
-            report[source] = {
-              inbound: {
-                "no answer": 0,
-                answered: 0,
-                failed: 0,
-                busy: 0,
-                congestion: 0,
-              },
-              outbound: {
-                "no answer": 0,
-                answered: 0,
-                failed: 0,
-                busy: 0,
-                congestion: 0,
-              },
-            };
-          }
-
-          if (direction === "Inbound" || direction === "Outbound") {
-            const disp = disposition.toLowerCase(); // Make lowercase for matching
-            if (report[source][direction.toLowerCase()][disp] !== undefined) {
-              report[source][direction.toLowerCase()][disp]++;
-            }
-          }
-        });
-
-      return report;
-    }
-    async function downloadExcel(report) {
-      const workbook = new ExcelJS.Workbook();
-      const worksheet = workbook.addWorksheet("Call Report");
-
-      // Add headers
-      worksheet.mergeCells("B1:F1");
-      worksheet.getCell("B1").value = "Inbound";
-      worksheet.getCell("B1").alignment = {
-        horizontal: "center",
-        vertical: "middle",
-      };
-
-      worksheet.mergeCells("G1:K1");
-      worksheet.getCell("G1").value = "Outbound";
-      worksheet.getCell("G1").alignment = {
-        horizontal: "center",
-        vertical: "middle",
-      };
-
-      worksheet.addRow([
-        "Caller",
-        "No Answer",
-        "Answered",
-        "Failed",
-        "Busy",
-        "Congestion",
-        "No Answer",
-        "Answered",
-        "Failed",
-        "Busy",
-        "Congestion",
-      ]);
-
-      // Add data rows
-      for (const [source, counts] of Object.entries(report)) {
-        worksheet.addRow([
-          source,
-          counts.inbound["no answer"],
-          counts.inbound["answered"],
-          counts.inbound["failed"],
-          counts.inbound["busy"],
-          counts.inbound["congestion"],
-          counts.outbound["no answer"],
-          counts.outbound["answered"],
-          counts.outbound["failed"],
-          counts.outbound["busy"],
-          counts.outbound["congestion"],
-        ]);
-      }
-
-      // Apply borders to all cells
-      worksheet.eachRow((row) => {
-        row.eachCell((cell) => {
-          cell.border = {
-            top: { style: "thin" },
-            left: { style: "thin" },
-            bottom: { style: "thin" },
-            right: { style: "thin" },
-          };
-        });
-      });
-
-      // Export the workbook
-      const buffer = await workbook.xlsx.writeBuffer();
-      const blob = new Blob([buffer], {
-        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      });
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.download = "Call_Report.xlsx";
-      link.click();
-    }
-
-    // Attach the function to the button click event
-    document.getElementById("handleDownload").onclick = function () {
-      const report = generateReportData(currentData); // currentData = your filtered table data
-      downloadExcel(report);
-    };
-
-    // Default today's date for both pickers
-    window.onload = () => {
-      const today = new Date().toISOString().split("T")[0];
-      document.getElementById("startDate").value = today;
-      document.getElementById("endDate").value = today;
-    };
-
-
-
-    // 🎯 Animation function
-    function animateCountUp(element, endValue, duration = 1000) {
-      const startValue = parseInt(element.textContent.replace(/,/g, "")) || 0;
-      const startTime = performance.now();
-
-      function update(currentTime) {
-        const elapsed = currentTime - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-        const currentValue = Math.floor(
-          progress * (endValue - startValue) + startValue
+        return (
+          (!extVal || callerExt === extVal) &&
+          (!dirVal || direction === dirVal) &&
+          (!statusVal || status === statusVal)
         );
-        element.textContent = currentValue.toLocaleString();
+      });
 
-        if (progress < 1) {
-          requestAnimationFrame(update);
-        }
-      }
+      // Render filtered table
+      let tableBody = document.getElementById("call-logs-body");
+      let tableRows = "";
 
-      requestAnimationFrame(update);
+      filtered.forEach((item) => {
+        let callerName = parseCallerName(item.clid);
+        let callerExtRaw =
+          item.userfield === "[inbound]"
+            ? item.wherelanded
+            : extractNumber(item.realsrc);
+        let callerExt = callerExtRaw || "N/A";
+        let callerNumber = item.src || "-";
+        let receiver = item.dst || "-";
+        let dateTime = item.start || "-";
+        let duration = item.duration || "-";
+        let direction =
+          item.userfield === "[inbound]"
+            ? "IN"
+            : item.userfield === "[outbound]"
+            ? "OUT"
+            : "-";
+        let status = item.disposition || "-";
+
+        tableRows += `
+<tr>
+<td>${callerExt}</td>
+<td>${callerName}</td>
+<td>${callerNumber}</td>
+<td>${receiver}</td>
+<td>${dateTime}</td>
+<td>${duration}</td>
+<td>${direction}</td>
+<td>${status}</td>
+</tr>
+`;
+      });
+
+      tableBody.innerHTML = tableRows;
+
+      // ✅ Re-render chart with filtered data
+      const startDate = document.getElementById("startDate").value;
+      const endDate = document.getElementById("endDate").value;
+      renderSeparateDirectionCharts(filtered, startDate, endDate);
+
     }
-
+    window.applyFilters = applyFilters;
+    function renderSeparateDirectionCharts(data, startDate, endDate) {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59);
+    
+      const groupByDateAndStatus = (filterDirection) => {
+        const dateMap = {};
+        const statusSet = new Set();
+    
+        data.forEach(item => {
+          const rawDate = new Date(item.start);
+          if (rawDate >= start && rawDate <= end) {
+            const direction = item.userfield === '[inbound]' ? 'IN' : item.userfield === '[outbound]' ? 'OUT' : 'UNKNOWN';
+            if (direction !== filterDirection) return;
+    
+            const dateStr = rawDate.toISOString().split('T')[0];
+            const status = item.disposition || 'Unknown';
+            statusSet.add(status);
+    
+            if (!dateMap[dateStr]) dateMap[dateStr] = {};
+            if (!dateMap[dateStr][status]) dateMap[dateStr][status] = 0;
+            dateMap[dateStr][status]++;
+          }
+        });
+    
+        const sortedDates = Object.keys(dateMap).sort();
+        const statusList = Array.from(statusSet);
+        const datasets = statusList.map((status, i) => ({
+          label: status,
+          data: sortedDates.map(date => dateMap[date][status] || 0),
+          backgroundColor: `hsl(${i * 40}, 70%, 60%)`
+        }));
+    
+        return { labels: sortedDates, datasets };
+      };
+    
+      const inData = groupByDateAndStatus('IN');
+      const outData = groupByDateAndStatus('OUT');
+    
+      // Destroy existing charts
+      if (inboundChartInstance) inboundChartInstance.destroy();
+      if (outboundChartInstance) outboundChartInstance.destroy();
+    
+      const inCtx = document.getElementById('inboundChart').getContext('2d');
+      const outCtx = document.getElementById('outboundChart').getContext('2d');
+    
+      inboundChartInstance = new Chart(inCtx, {
+        type: 'bar',
+        data: {
+          labels: inData.labels,
+          datasets: inData.datasets
+        },
+        options: {
+          plugins: {
+            title: { display: true, text: 'Inbound Status by Day' }
+          },
+          responsive: true,
+          scales: {
+            y: { beginAtZero: true }
+          }
+        }
+      });
+    
+      outboundChartInstance = new Chart(outCtx, {
+        type: 'bar',
+        data: {
+          labels: outData.labels,
+          datasets: outData.datasets
+        },
+        options: {
+          plugins: {
+            title: { display: true, text: 'Outbound Status by Day' }
+          },
+          responsive: true,
+          scales: {
+            y: { beginAtZero: true }
+          }
+        }
+      });
+    }
+    
     function renderUsers(users) {
       const tbody = document.querySelector("#userTable tbody");
       const fragment = document.createDocumentFragment();
@@ -1503,8 +1470,7 @@ function setupDashboard(userType) {
       });
 
       tbody.appendChild(fragment);
-    // Function to toggle theme
-   
+      // Function to toggle theme
     }
 
     function editUserById(uuid) {
@@ -1844,7 +1810,7 @@ function setupDashboard(userType) {
       // Get the company ID from local storage
       const companyId = fullData.data.company.id;
       //console.log("companyId", companyId);
-      const tenantName = localStorage.getItem('companyCode');
+      const tenantName = localStorage.getItem("companyCode");
       //console.log("storedId", tenantName);
       const apiKey = fullData.apikey; // Replace with real key
       const extUrl = `https://sip5.houstonsupport.com/pbx/proxyapi.php?reqtype=INFO&tenant=${tenantName}&format=json&key=${apiKey}&info=extensions`;
@@ -1983,7 +1949,7 @@ function setupDashboard(userType) {
           timeZone: formFields.wss.value,
         };
         //console.log("payload", payload);
-fetch(`${apiUrl}/user/userregister`, {
+        fetch(`${apiUrl}/user/userregister`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
@@ -2057,27 +2023,29 @@ fetch(`${apiUrl}/user/userregister`, {
     const eyeIcon = document.getElementById("eyeIcon");
     const cancelPasswordBtn = document.getElementById("cancelPasswordBtn");
     const submitPasswordBtn = document.getElementById("submitPasswordBtn");
-    document.getElementById("searchInput").addEventListener("input", function () {
-      const searchValue = this.value.toLowerCase();
-      const rows = document.querySelectorAll("#userTable tbody tr");
+    document
+      .getElementById("searchInput")
+      .addEventListener("input", function () {
+        const searchValue = this.value.toLowerCase();
+        const rows = document.querySelectorAll("#userTable tbody tr");
 
-      rows.forEach((row) => {
-        const cells = row.getElementsByTagName("td");
-        let rowText = "";
+        rows.forEach((row) => {
+          const cells = row.getElementsByTagName("td");
+          let rowText = "";
 
-        // Loop through all cells in the row
-        for (let cell of cells) {
-          rowText += cell.textContent.toLowerCase() + " "; // Combine all text content
-        }
+          // Loop through all cells in the row
+          for (let cell of cells) {
+            rowText += cell.textContent.toLowerCase() + " "; // Combine all text content
+          }
 
-        // If search value matches any part of the row text, show the row; otherwise, hide it
-        if (rowText.includes(searchValue)) {
-          row.style.display = "";
-        } else {
-          row.style.display = "none";
-        }
+          // If search value matches any part of the row text, show the row; otherwise, hide it
+          if (rowText.includes(searchValue)) {
+            row.style.display = "";
+          } else {
+            row.style.display = "none";
+          }
+        });
       });
-    });
   } else if (userType === "admin") {
     adminDiv.classList.remove("hidden");
     superadminDiv.classList.add("hidden");
@@ -2534,7 +2502,9 @@ fetch(`${apiUrl}/user/userregister`, {
               let realsrc = row.realsrc || row.wherelanded;
 
               // Remove everything after '-' for filtering
-              const filteredSrc = realsrc ? realsrc.split('-')[0].trim() : realsrc;
+              const filteredSrc = realsrc
+                ? realsrc.split("-")[0].trim()
+                : realsrc;
 
               return {
                 clid: row.clid,
@@ -2543,7 +2513,8 @@ fetch(`${apiUrl}/user/userregister`, {
                 start: row.start,
                 disposition: row.disposition,
                 userfield: row.userfield,
-                direction: row.userfield === "[outbound]" ? "Outbound" : "Inbound",
+                direction:
+                  row.userfield === "[outbound]" ? "Outbound" : "Inbound",
               };
             })
             // Filter out rows with N/A or numbers greater than 6 digits
@@ -2625,7 +2596,9 @@ fetch(`${apiUrl}/user/userregister`, {
         html += "</ul>";
 
         const inAnsElement = document.getElementById("in_ans");
-        const answeredCallsCount = filtered.filter(row => row.disposition === "ANSWERED" && row.direction === "Inbound").length;
+        const answeredCallsCount = filtered.filter(
+          (row) => row.disposition === "ANSWERED" && row.direction === "Inbound"
+        ).length;
         inAnsElement.textContent = answeredCallsCount;
       }
 
@@ -2633,6 +2606,7 @@ fetch(`${apiUrl}/user/userregister`, {
       ["dispositionFilter", "srcFilter", "directionFilter"].forEach((id) => {
         document.getElementById(id).onchange = applyFilters;
       });
+      // renderSeparateDirectionCharts(filtered, startDate, endDate);
 
       // Initial render
       applyFilters();
@@ -2797,8 +2771,6 @@ fetch(`${apiUrl}/user/userregister`, {
       document.getElementById("endDate").value = today;
     };
 
-
-
     // 🎯 Animation function
     function animateCountUp(element, endValue, duration = 1000) {
       const startValue = parseInt(element.textContent.replace(/,/g, "")) || 0;
@@ -2849,8 +2821,7 @@ fetch(`${apiUrl}/user/userregister`, {
       });
 
       tbody.appendChild(fragment);
-    // Function to toggle theme
-   
+      // Function to toggle theme
     }
 
     function editUserById(uuid) {
@@ -3189,7 +3160,7 @@ fetch(`${apiUrl}/user/userregister`, {
       // Get the company ID from local storage
       const companyId = fullData.data.company.id;
       //console.log("companyId", companyId);
-      const tenantName = localStorage.getItem('companyCode');
+      const tenantName = localStorage.getItem("companyCode");
       //console.log("storedId", tenantName);
       const apiKey = fullData.apikey; // Replace with real key
       const extUrl = `https://sip5.houstonsupport.com/pbx/proxyapi.php?reqtype=INFO&tenant=${tenantName}&format=json&key=${apiKey}&info=extensions`;
@@ -3305,99 +3276,97 @@ fetch(`${apiUrl}/user/userregister`, {
         });
 
       // Save button click handler
-  formFields.saveBtn.onclick = () => {
-      var selectedDIDs = [];
-      const selectedExtension = formFields.extensionSelect.value;
+      formFields.saveBtn.onclick = () => {
+        var selectedDIDs = [];
+        const selectedExtension = formFields.extensionSelect.value;
 
-      // Get selected DIDs
-      const checkboxes = document.querySelectorAll(
-        'input[name="didCheckbox"]:checked'
-      );
-      checkboxes.forEach((checkbox) => selectedDIDs.push(checkbox.value));
-      var companyId = localStorage.getItem("companyId");
-      const payload = {
-        firstName: formFields.firstName.value,
-        lastName: formFields.lastName.value,
-        email: formFields.email.value,
-        password: "9qM`nk+ACbd!{2+B",
-        company: companyId,
-        city: selectedValues.value134 || "",
-        state: selectedValues.value135 || "",
-        response: JSON.stringify(addselectedDIDs),
-        userType: formFields.userType.value,
-        timeZone: formFields.wss.value,
-      };
-      //console.log("payload", payload);
-      fetch(`${apiUrl}/user/userregister`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          //console.log("Add user response:", data);
-
-          if (data.success) {
-            //console.log("starting");
-            const selectedCompanyCode = localStorage.getItem(
-              "selectedCompanyCode"
-            );
-            //console.log("selectedCompanyCode", selectedCompanyCode);
-            //console.log("1");
-            fetchUsers(selectedCompanyCode); // Refresh user table
-            //console.log("2");
-            modal.hide();
-            //console.log("3");
-            formFields.firstName.value = "";
-            formFields.lastName.value = "";
-            formFields.email.value = "";
-            formFields.userType.value = "";
-            formFields.extensionSelect.value = "";
-            formFields.didSelect.innerHTML = ""; // If it's a container for DIDs
-
-            // Reset any global values used
-            selectedValues.value134 = "";
-            selectedValues.value135 = "";
-            selectedDIDs = [];
-            //console.log("ending");
-          } else {
-            alert(data.error || "Failed to add user.");
-            formFields.firstName.value = "";
-            formFields.lastName.value = "";
-            formFields.email.value = "";
-            formFields.userType.value = "";
-            formFields.extensionSelect.value = "";
-            formFields.didSelect.innerHTML = ""; // If it's a container for DIDs
-
-            // Reset any global values used
-            selectedValues.value134 = "";
-            selectedValues.value135 = "";
-            selectedDIDs = [];
-          }
+        // Get selected DIDs
+        const checkboxes = document.querySelectorAll(
+          'input[name="didCheckbox"]:checked'
+        );
+        checkboxes.forEach((checkbox) => selectedDIDs.push(checkbox.value));
+        var companyId = localStorage.getItem("companyId");
+        const payload = {
+          firstName: formFields.firstName.value,
+          lastName: formFields.lastName.value,
+          email: formFields.email.value,
+          password: "9qM`nk+ACbd!{2+B",
+          company: companyId,
+          city: selectedValues.value134 || "",
+          state: selectedValues.value135 || "",
+          response: JSON.stringify(addselectedDIDs),
+          userType: formFields.userType.value,
+          timeZone: formFields.wss.value,
+        };
+        //console.log("payload", payload);
+        fetch(`${apiUrl}/user/userregister`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
         })
-        .catch((err) => {
-          console.error("Error adding user:", err);
-          alert("Something went wrong while adding the user.");
-          formFields.firstName.value = "";
-          formFields.lastName.value = "";
-          formFields.email.value = "";
-          formFields.userType.value = "";
-          formFields.extensionSelect.value = "";
-          formFields.didSelect.innerHTML = ""; // If it's a container for DIDs
+          .then((res) => res.json())
+          .then((data) => {
+            //console.log("Add user response:", data);
 
-          // Reset any global values used
-          selectedValues.value134 = "";
-          selectedValues.value135 = "";
-          selectedDIDs = [];
-        });
+            if (data.success) {
+              //console.log("starting");
+              const selectedCompanyCode = localStorage.getItem(
+                "selectedCompanyCode"
+              );
+              //console.log("selectedCompanyCode", selectedCompanyCode);
+              //console.log("1");
+              fetchUsers(selectedCompanyCode); // Refresh user table
+              //console.log("2");
+              modal.hide();
+              //console.log("3");
+              formFields.firstName.value = "";
+              formFields.lastName.value = "";
+              formFields.email.value = "";
+              formFields.userType.value = "";
+              formFields.extensionSelect.value = "";
+              formFields.didSelect.innerHTML = ""; // If it's a container for DIDs
+
+              // Reset any global values used
+              selectedValues.value134 = "";
+              selectedValues.value135 = "";
+              selectedDIDs = [];
+              //console.log("ending");
+            } else {
+              alert(data.error || "Failed to add user.");
+              formFields.firstName.value = "";
+              formFields.lastName.value = "";
+              formFields.email.value = "";
+              formFields.userType.value = "";
+              formFields.extensionSelect.value = "";
+              formFields.didSelect.innerHTML = ""; // If it's a container for DIDs
+
+              // Reset any global values used
+              selectedValues.value134 = "";
+              selectedValues.value135 = "";
+              selectedDIDs = [];
+            }
+          })
+          .catch((err) => {
+            console.error("Error adding user:", err);
+            alert("Something went wrong while adding the user.");
+            formFields.firstName.value = "";
+            formFields.lastName.value = "";
+            formFields.email.value = "";
+            formFields.userType.value = "";
+            formFields.extensionSelect.value = "";
+            formFields.didSelect.innerHTML = ""; // If it's a container for DIDs
+
+            // Reset any global values used
+            selectedValues.value134 = "";
+            selectedValues.value135 = "";
+            selectedDIDs = [];
+          });
+      };
     };
-  };
-}
+  }
   // Select DOM elements
   const changePasswordBtn = document.getElementById("changePasswordBtn");
-  const passwordEditControls = document.getElementById(
-    "passwordEditControls"
-  );
+  const passwordEditControls = document.getElementById("passwordEditControls");
   const togglePasswordBtn = document.getElementById("togglePassword");
   const editPasswordInput = document.getElementById("editPasswordInput");
   const eyeIcon = document.getElementById("eyeIcon");
