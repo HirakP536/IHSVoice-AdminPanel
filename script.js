@@ -641,6 +641,10 @@ function setupDashboard(userType) {
             <i class="fas fa-users mr-2"></i>
             <span class="sidebar-text">Users</span>
         </a>
+        <a href="#" onclick="showSection('Logs')" class="block px-7 py-3 no-underline flex items-center space-x-2">
+            <i class="fa fa-folder"></i>
+            <span class="sidebar-text">Logs</span>
+        </a>
     </nav>
 </aside>
 <!-- Main content area -->
@@ -698,7 +702,45 @@ function setupDashboard(userType) {
           ">Loading...</p>
       </div>
     </div>
-     <div class="bg-white dark:bg-gray-800 p-3 shadow rounded-xl mt-2">
+     
+     
+      
+      
+  </section>
+  <!-- Users Section -->
+  <section id="users" class="section hidden">
+    <div class="flex justify-between items-center mb-2">
+      <!-- Search Bar -->
+      <input type="text" id="searchInput" class="form-control w-64" style="width: 89% !important;"
+        placeholder="Search...">
+      <!-- Add User Button -->
+      <button id="openAddUserModal"
+        class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 dark:bg-indigo-700 dark:hover:bg-indigo-600">
+        Add User
+      </button>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-bordered" id="userTable">
+        <thead class="table-light">
+          <tr>
+            <th class="text-center px-4 py-2 fcolor">First Name</th>
+            <th class="text-center px-4 py-2 fcolor">Last Name</th>
+            <th class="text-center px-4 py-2 fcolor">Email</th>
+            <th class="text-center px-4 py-2 fcolor">User Type</th>
+            <th class="text-center px-4 py-2 fcolor">Is Active</th>
+            <th class="text-center px-4 py-2 fcolor">Extension Name</th>
+            <th class="text-center px-4 py-2 fcolor">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+          <!-- Table rows from API response will be inserted here -->
+        </tbody>
+      </table>
+    </div>
+  </section>
+  <section class="section hidden" id="Logs">
+  <div class="bg-white dark:bg-gray-800 p-3 shadow rounded-xl mt-2">
         <div class="row">
           <div>
           <label for="predefinedRange">Select Range: </label>
@@ -785,42 +827,7 @@ function setupDashboard(userType) {
           </div>
         </div>
       </div>
-      
   </section>
-  <!-- Users Section -->
-  <section id="users" class="section hidden">
-    <div class="flex justify-between items-center mb-2">
-      <!-- Search Bar -->
-      <input type="text" id="searchInput" class="form-control w-64" style="width: 89% !important;"
-        placeholder="Search...">
-      <!-- Add User Button -->
-      <button id="openAddUserModal"
-        class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 dark:bg-indigo-700 dark:hover:bg-indigo-600">
-        Add User
-      </button>
-    </div>
-
-    <div class="table-responsive">
-      <table class="table table-bordered" id="userTable">
-        <thead class="table-light">
-          <tr>
-            <th class="text-center px-4 py-2 fcolor">First Name</th>
-            <th class="text-center px-4 py-2 fcolor">Last Name</th>
-            <th class="text-center px-4 py-2 fcolor">Email</th>
-            <th class="text-center px-4 py-2 fcolor">User Type</th>
-            <th class="text-center px-4 py-2 fcolor">Is Active</th>
-            <th class="text-center px-4 py-2 fcolor">Extension Name</th>
-            <th class="text-center px-4 py-2 fcolor">Actions</th>
-          </tr>
-        </thead>
-        <tbody id="tableBody">
-          <!-- Table rows from API response will be inserted here -->
-        </tbody>
-      </table>
-    </div>
-  </section>
-
-
 </main>
     <!-- Add User Modal -->
     <div class="modal fade dark-mode" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel"
@@ -982,14 +989,14 @@ function setupDashboard(userType) {
 
 </div>`;
     superDiv.appendChild(newDiv);
-    //const apiUrl = "http://172.31.199.45:5000";
-    const apiUrl = "https://voiceapi.shuklais.com";
+    const apiUrl = "http://172.31.199.45:5000";
+    //const apiUrl = "https://voiceapi.shuklais.com";
 
     let userMap = new Map();
     const fullData = JSON.parse(localStorage.getItem("fullData"));
     let inboundChartInstance;
     let outboundChartInstance;
-    
+    var companyCode = "";
     fetch(`${apiUrl}/company/listCompany`)
       .then((res) => res.json())
       .then((data) => {
@@ -1033,10 +1040,13 @@ function setupDashboard(userType) {
           const selectedOption = this.options[this.selectedIndex];
           const selectedId = selectedOption.dataset.id;
           const selectedCompanyCode = this.value;
+          companyCode = selectedCompanyCode;
           // fetchData(selectedCompanyCode)
           fetchUsers(selectedCompanyCode);
           fetchExt(selectedCompanyCode);
+
           fetchDid(selectedCompanyCode);
+          // fetchData(selectedCompanyCode,"","");
           //console.log("selectedCompanyCode", selectedCompanyCode);
           localStorage.setItem("selectedCompanyCode", selectedCompanyCode);
           localStorage.setItem("companyCode", selectedCompanyCode);
@@ -1063,6 +1073,8 @@ function setupDashboard(userType) {
 
           users.forEach((user) => userMap.set(user.uuid, user));
           renderUsers(users);
+          companyCode = selectedCompanyCode;
+          // fetchData(selectedCompanyCode,"","");
           fetchExt(selectedCompanyCode);
           // fetchCDR(selectedCompanyCode)
           fetchDid(selectedCompanyCode);
@@ -1127,6 +1139,17 @@ function setupDashboard(userType) {
 
     let originalData = [];
     const isLoader = "true";
+    document.addEventListener("DOMContentLoaded", function () {
+      const predefinedRange = document.getElementById("predefinedRange");
+
+      // Set the default value to "today"
+      predefinedRange.value = "today";
+      start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      end = new Date();
+      // Trigger the change event to execute the logic for "today"
+      predefinedRange.dispatchEvent(new Event("change"));
+    });
+
     document
       .getElementById("predefinedRange")
       .addEventListener("change", function () {
@@ -1143,11 +1166,20 @@ function setupDashboard(userType) {
             end = new Date(); // current time
             break;
           case "yesterday":
-            start = end = new Date(
+            start = new Date(
               today.getFullYear(),
               today.getMonth(),
               today.getDate() - 1
             );
+            start.setHours(0, 5, 0); // Set to start of the day
+            console.log("start", start);
+            end = new Date(
+              today.getFullYear(),
+              today.getMonth(),
+              today.getDate() - 1
+            );
+            end.setHours(23, 59, 59); // Set to end of the day
+            console.log("end", end);
             break;
           case "thisWeek":
             const firstDayOfWeek = new Date(
@@ -1168,11 +1200,43 @@ function setupDashboard(userType) {
             return;
         }
 
+        // Set the start and end date inputs
         document.getElementById("startDate").value = formatDate(start);
         document.getElementById("endDate").value = formatDate(end);
 
-        filterByDate(); // Automatically fetch data
+        // Call the filterByDate function to fetch data
+        filterByDate();
       });
+
+    function formatDate(date) {
+      return date.toISOString().split("T")[0];
+    }
+
+    function filterByDate() {
+      const start = document.getElementById("startDate").value;
+      const end = document.getElementById("endDate").value;
+
+      if (!start || !end) {
+        alert("Please select both start and end dates.");
+        return;
+      }
+
+      const selectedRange = document.getElementById("predefinedRange").value;
+      let startDateTime = `${start} 00:00`;
+      let endDateTime;
+
+      if (selectedRange === "today") {
+        const now = new Date();
+        const hours = now.getHours().toString().padStart(2, "0");
+        const minutes = now.getMinutes().toString().padStart(2, "0");
+        endDateTime = `${end} ${hours}:${minutes}`;
+      } else {
+        endDateTime = `${end} 23:59`;
+      }
+
+      // Fetch data based on the selected date range
+      fetchData(startDateTime, endDateTime);
+    }
 
     function formatDate(date) {
       return date.toISOString().split("T")[0];
@@ -1204,10 +1268,13 @@ function setupDashboard(userType) {
     // Attach to the global window object
     window.filterByDate = filterByDate;
     function fetchData(startDateTime, endDateTime) {
-      const url = `https://sip5.houstonsupport.com/pbx/proxyapi.php?reqtype=INFO&info=cdrs&tenant=gmd&key=trL9cGpdP6WW9Y9z&format=json&start=${encodeURIComponent(
+      selectedCompanyCode = companyCode;
+      // var selectedCompanyCode ="gmd";
+      console.log("tenat url", selectedCompanyCode);
+      const url = `https://sip5.houstonsupport.com/pbx/proxyapi.php?reqtype=INFO&info=cdrs&tenant=${selectedCompanyCode}&key=trL9cGpdP6WW9Y9z&format=json&start=${encodeURI(
         startDateTime
-      )}&end=${encodeURIComponent(endDateTime)}`;
-
+      )}&end=${encodeURI(endDateTime)}`;
+      console.log("API URL:", url);
       fetch(url)
         .then((res) => res.json())
         .then((data) => {
@@ -1216,8 +1283,11 @@ function setupDashboard(userType) {
 
           const start = startDateTime.split(" ")[0];
           const end = endDateTime.split(" ")[0];
-          renderSeparateDirectionCharts(data, start.split(' ')[0], end.split(' ')[0]);
-
+          renderSeparateDirectionCharts(
+            data,
+            start.split(" ")[0],
+            end.split(" ")[0]
+          );
         })
         .catch((err) => console.error("API error:", err));
     }
@@ -1270,10 +1340,17 @@ function setupDashboard(userType) {
       extFilter.innerHTML = '<option value="">All</option>';
       statusFilter.innerHTML = '<option value="">All</option>';
 
-      extSet.forEach(
-        (ext) =>
-          (extFilter.innerHTML += `<option value="${ext}">${ext}</option>`)
-      );
+      // Sort extensions before adding to dropdown
+      Array.from(extSet)
+        .sort((a, b) => {
+          // Numeric sort if both are numbers, otherwise string sort
+          if (!isNaN(a) && !isNaN(b)) return Number(a) - Number(b);
+          return a.localeCompare(b);
+        })
+        .forEach(
+          (ext) =>
+            (extFilter.innerHTML += `<option value="${ext}">${ext}</option>`)
+        );
       statusSet.forEach(
         (status) =>
           (statusFilter.innerHTML += `<option value="${status}">${status}</option>`)
@@ -1357,90 +1434,107 @@ function setupDashboard(userType) {
       const startDate = document.getElementById("startDate").value;
       const endDate = document.getElementById("endDate").value;
       renderSeparateDirectionCharts(filtered, startDate, endDate);
-
     }
     window.applyFilters = applyFilters;
     function renderSeparateDirectionCharts(data, startDate, endDate) {
       const start = new Date(startDate);
       const end = new Date(endDate);
       end.setHours(23, 59, 59);
-    
-      const groupByDateAndStatus = (filterDirection) => {
-        const dateMap = {};
-        const statusSet = new Set();
-    
-        data.forEach(item => {
+
+      const groupByStatus = (filterDirection) => {
+        const statusMap = {};
+        data.forEach((item) => {
           const rawDate = new Date(item.start);
           if (rawDate >= start && rawDate <= end) {
-            const direction = item.userfield === '[inbound]' ? 'IN' : item.userfield === '[outbound]' ? 'OUT' : 'UNKNOWN';
+            const direction =
+              item.userfield === "[inbound]"
+                ? "IN"
+                : item.userfield === "[outbound]"
+                ? "OUT"
+                : "UNKNOWN";
             if (direction !== filterDirection) return;
-    
-            const dateStr = rawDate.toISOString().split('T')[0];
-            const status = item.disposition || 'Unknown';
-            statusSet.add(status);
-    
-            if (!dateMap[dateStr]) dateMap[dateStr] = {};
-            if (!dateMap[dateStr][status]) dateMap[dateStr][status] = 0;
-            dateMap[dateStr][status]++;
+
+            const status = item.disposition || "Unknown";
+            if (!statusMap[status]) statusMap[status] = 0;
+            statusMap[status]++;
           }
         });
-    
-        const sortedDates = Object.keys(dateMap).sort();
-        const statusList = Array.from(statusSet);
-        const datasets = statusList.map((status, i) => ({
-          label: status,
-          data: sortedDates.map(date => dateMap[date][status] || 0),
-          backgroundColor: `hsl(${i * 40}, 70%, 60%)`
-        }));
-    
-        return { labels: sortedDates, datasets };
+
+        const labels = Object.keys(statusMap);
+        const dataValues = Object.values(statusMap);
+
+        return { labels, data: dataValues };
       };
-    
-      const inData = groupByDateAndStatus('IN');
-      const outData = groupByDateAndStatus('OUT');
-    
+
+      const inData = groupByStatus("IN");
+      const outData = groupByStatus("OUT");
+
       // Destroy existing charts
       if (inboundChartInstance) inboundChartInstance.destroy();
       if (outboundChartInstance) outboundChartInstance.destroy();
-    
-      const inCtx = document.getElementById('inboundChart').getContext('2d');
-      const outCtx = document.getElementById('outboundChart').getContext('2d');
-    
-      inboundChartInstance = new Chart(inCtx, {
-        type: 'bar',
-        data: {
-          labels: inData.labels,
-          datasets: inData.datasets
-        },
-        options: {
-          plugins: {
-            title: { display: true, text: 'Inbound Status by Day' }
+
+      const inCtx = document.getElementById("inboundChart").getContext("2d");
+      const outCtx = document.getElementById("outboundChart").getContext("2d");
+
+      const statusColors = {
+        BUSY: "#ffc107", // yellow
+        ANSWERED: "#28a745", // green
+        "NO ANSWER": "#dc3545", // red
+        CONGESTION: "#fd7e14", // orange
+        FAILED: "#000000", // black
+      };
+
+      const getColors = (labels) =>
+        labels.map((label) => statusColors[label] || "#95a5a6"); // default grey
+
+      const createPieChart = (ctx, chartData, title) => {
+        return new Chart(ctx, {
+          type: "pie",
+          data: {
+            labels: chartData.labels,
+            datasets: [
+              {
+                data: chartData.data,
+                backgroundColor: getColors(chartData.labels),
+              },
+            ],
           },
-          responsive: true,
-          scales: {
-            y: { beginAtZero: true }
-          }
-        }
-      });
-    
-      outboundChartInstance = new Chart(outCtx, {
-        type: 'bar',
-        data: {
-          labels: outData.labels,
-          datasets: outData.datasets
-        },
-        options: {
-          plugins: {
-            title: { display: true, text: 'Outbound Status by Day' }
+          options: {
+            plugins: {
+              title: { display: true, text: title },
+              datalabels: {
+                formatter: (value, ctx) => {
+                  const total = ctx.chart.data.datasets[0].data.reduce(
+                    (sum, val) => sum + val,
+                    0
+                  );
+                  const percentage = ((value / total) * 100).toFixed(2);
+                  return `${percentage}%`; // Show percentage on the chart
+                },
+                color: "#fff", // Label color
+                font: {
+                  weight: "bold",
+                  size: 14,
+                },
+              },
+            },
+            responsive: true,
           },
-          responsive: true,
-          scales: {
-            y: { beginAtZero: true }
-          }
-        }
-      });
+        });
+      };
+
+      inboundChartInstance = createPieChart(
+        inCtx,
+        inData,
+        "Inbound Status Distribution"
+      );
+      outboundChartInstance = createPieChart(
+        outCtx,
+        outData,
+        "Outbound Status Distribution"
+      );
     }
-    
+
     function renderUsers(users) {
       const tbody = document.querySelector("#userTable tbody");
       const fragment = document.createDocumentFragment();
@@ -1477,6 +1571,18 @@ function setupDashboard(userType) {
       const user = userMap.get(uuid);
 
       if (!user) return;
+      let originalUserState = {
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        wss: user.timeZone,
+        userType: user.userType,
+        extension: user.city,
+        extensionState: user.state,
+        isActive: user.is_active,
+        dids: user.response, // must match sorting
+        company: user.company?.id,
+      };
 
       const formFields = {
         firstName: document.getElementById("editFirstName"),
@@ -1652,45 +1758,117 @@ function setupDashboard(userType) {
 
       // Handle save button click
       formFields.saveBtn.onclick = () => {
-        const updatedUser = {
-          userid: user.uuid,
-          firstName: formFields.firstName.value,
-          lastName: formFields.lastName.value,
-          userType: formFields.userType.value,
-          // communication: formFields.communication.value,
-          email: formFields.email.value,
-          timeZone: formFields.wss.value,
-          city: selectedValues.value134 || "", // Set city with value134 (extension value)
-          state: selectedValues.value135 || "", // Set state with value135 (extension value)
-          response: JSON.stringify(selectedDIDs), // Store selected DIDs in response array
-          company: selectedCompanyID,
-          is_active: isActiveValue,
-        };
-        //console.log(updatedUser);
+        const newDIDs = selectedDIDs.slice().sort();
+        let originalDIDs = [];
+        try {
+          originalDIDs = JSON.parse(user.response || "[]");
+        } catch (e) {
+          console.warn("Invalid original DIDs format:", user.response);
+        }
+        originalDIDs = originalDIDs.slice().sort();
+        const arraysEqual = (a, b) =>
+          a.length === b.length && a.every((val, i) => val === b[i]);
+        console.log("newDIDs", newDIDs);
+        console.log("originalDIDs", originalDIDs);
+        const currentExtension = selectedValues.value134 || "";
+        const currentExtensionState = selectedValues.value135 || "";
+        const loginuser =
+          fullData?.data?.firstName + " " + fullData?.data?.lastName;
+        const changedUser = { userid: user.uuid, loginuser: loginuser };
+
+        if (formFields.firstName.value !== originalUserState.firstName)
+          changedUser.firstName = formFields.firstName.value;
+
+        if (formFields.lastName.value !== originalUserState.lastName)
+          changedUser.lastName = formFields.lastName.value;
+
+        if (formFields.email.value !== originalUserState.email)
+          changedUser.email = formFields.email.value;
+
+        if (formFields.userType.value !== originalUserState.userType)
+          changedUser.userType = formFields.userType.value;
+
+        if (formFields.wss.value !== originalUserState.wss)
+          changedUser.timeZone = formFields.wss.value;
+
+        if (currentExtension !== originalUserState.extension)
+          changedUser.city = currentExtension;
+
+        if (currentExtensionState !== originalUserState.extensionState)
+          changedUser.state = currentExtensionState;
+
+        if (isActiveValue !== originalUserState.isActive)
+          changedUser.is_active = isActiveValue;
+
+        // if (newDIDs !== originalDIDs) {
+        //   changedUser.response = JSON.stringify(newDIDs);
+        // }
+
+        if (!arraysEqual(newDIDs, originalDIDs)) {
+          changedUser.response = JSON.stringify(newDIDs);
+        }
+
+        if (selectedCompanyID !== originalUserState.company)
+          changedUser.company = selectedCompanyID;
+
+        // If no field changed
+        if (Object.keys(changedUser).length === 1) {
+          alert("No changes detected.");
+          return;
+        }
+
+        let phones = [];
+        if (newDIDs && newDIDs.length > 0) {
+          console.log("newDIDs", newDIDs);
+            phones = newDIDs.map((did) => {
+              // Extract the last 10 or 11 digit number from the string (handles cases like "test 00 - 18329155481")
+              let match = did.match(/(\d{10,11})$/);
+              let phone = match ? match[1] : "";
+              // Remove leading '1' if present and length is 11
+              if (phone.length === 11 && phone.startsWith("1")) {
+                phone = phone.substring(1);
+              }
+              return {
+                label: `${did}`,
+                phone: phone,
+              };
+            });
+          console.log("add phones", phones);
+        }
+        changedUser.extensions = [
+          {
+            extname: selectedValues.value134,
+            password: selectedValues.value135,
+            phones: phones,
+          },
+        ];
+        console.log("check update user", changedUser);
+
+        // Proceed to save only changed data
         fetch(`${apiUrl}/user/editTokenUpdate`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(updatedUser),
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${fullData?.data?.accessToken}`, // Add the bearer token
+          },
+          body: JSON.stringify(changedUser),
         })
           .then((res) => res.json())
-          .then(() => {
-            fetchUsers(user.company?.code);
-            modal.hide();
-            formFields.firstName.value = "";
-            formFields.lastName.value = "";
-            formFields.wss.value = "";
-            // formFields.communication.value = "";
-            formFields.email.value = "";
-            formFields.userType.value = "";
-            formFields.extensionSelect.value = "";
-            formFields.didSelect.innerHTML = ""; // If it's a container for DIDs
-
-            // Reset any global values used
-            selectedValues.value134 = "";
-            selectedValues.value135 = "";
-            selectedDIDs = [];
+          .then((data) => {
+            if (data.success) {
+              fetchUsers(user.company?.code);
+              modal.hide();
+              // Reset fields here if needed
+            } else {
+              alert(data.error || "Failed to update user. Please check your input.");
+            }
+          })
+          .catch((err) => {
+            alert("Bad request or network error. Please try again.");
+            console.error("Edit user error:", err);
           });
       };
+
       formFields.pwdbtn.onclick = () => {
         const passwordEditControls = document.getElementById(
           "passwordEditControls"
@@ -1949,9 +2127,38 @@ function setupDashboard(userType) {
           timeZone: formFields.wss.value,
         };
         //console.log("payload", payload);
-        fetch(`${apiUrl}/user/userregister`, {
+        let phones = [];
+        if (addselectedDIDs && addselectedDIDs.length > 0) {
+          phones = addselectedDIDs.map((did) => {
+            // Extract the last 10 or 11 digit number from the string (handles cases like "test 00 - 18329155481")
+            let match = did.match(/(\d{10,11})$/);
+            let phone = match ? match[1] : "";
+            // Remove leading '1' if present and length is 11
+            if (phone.length === 11 && phone.startsWith("1")) {
+              phone = phone.substring(1);
+            }
+            return {
+              label: `${did}`,
+              phone: phone,
+            };
+          });
+          console.log("add phones", phones);
+        }
+        console.log("before add changedUser", payload);
+        payload.extensions = [
+          {
+            extname: payload.city,
+            password: payload.state,
+            phones: phones,
+          },
+        ];
+        console.log("working new adding payload", payload);
+        fetch(`${apiUrl}/user/useradd`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${fullData?.data?.accessToken}`, // Add the bearer token
+          },
           body: JSON.stringify(payload),
         })
           .then((res) => res.json())
@@ -2395,10 +2602,9 @@ function setupDashboard(userType) {
                     <button type="button" class="btn btn-primary" id="saveBtn">Save Changes</button>
                 </div>
             </div>
+          </div>
         </div>
-    </div>
-
-</div>`;
+      </div>`;
     adminDiv.appendChild(newDiv);
     //const apiUrl = "http://172.31.199.45:5000";
     const apiUrl = "https://voiceapi.shuklais.com";
@@ -3019,7 +3225,10 @@ function setupDashboard(userType) {
         //console.log(updatedUser);
         fetch(`${apiUrl}/user/editTokenUpdate`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${fullData?.data?.accessToken}`,
+          },
           body: JSON.stringify(updatedUser),
         })
           .then((res) => res.json())
