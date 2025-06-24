@@ -14,5 +14,7 @@ jobs:
         run: git -C "E:\test" pull origin main
 
       - name: Restart IIS Site
-        run: Restart-Website -Name "msgapi"
+        run: |
+          Import-Module WebAdministration
+          Restart-Website -Name "msgapi"
         shell: powershell
