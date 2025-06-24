@@ -12,9 +12,9 @@ jobs:
     steps:
       - name: Pull Latest Code
         run: git -C "E:\test" pull origin main
-
-      - name: Restart IIS Site
+      - name: Restart IIS Site via appcmd
         run: |
-          Import-Module WebAdministration
-          Restart-Website -Name "msgapi"
+          & "C:\Windows\System32\inetsrv\appcmd.exe" stop site "msgapi"
+          Start-Sleep -Seconds 2
+          & "C:\Windows\System32\inetsrv\appcmd.exe" start site "msgapi"
         shell: powershell
