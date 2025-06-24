@@ -15,4 +15,4 @@ jobs:
 
       - name: Restart IIS Site
         run: Restart-Website -Name "msgapi"
-        shell: pwsh
+        shell: powershell
