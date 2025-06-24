@@ -1,34 +1,18 @@
-name: Summarize new issues
+name: Auto Pull and Restart Specific IIS Site
 
 on:
-  issues:
-    types: [opened]
+  push:
+    branches:
+      - main
 
 jobs:
-  summary:
-    runs-on: ubuntu-latest
-    permissions:
-      issues: write
-      models: read
-      contents: read
+  deploy:
+    runs-on: self-hosted
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - name: Pull Latest Code
+        run: git -C "E:\test" pull origin main
 
-      - name: Run AI inference
-        id: inference
-        uses: actions/ai-inference@v1
-        with:
-          prompt: |
-            Summarize the following GitHub issue in one paragraph:
-            Title: ${{ github.event.issue.title }}
-            Body: ${{ github.event.issue.body }}
-
-      - name: Comment with AI summary
-        run: |
-          gh issue comment $ISSUE_NUMBER --body '${{ steps.inference.outputs.response }}'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          ISSUE_NUMBER: ${{ github.event.issue.number }}
-          RESPONSE: ${{ steps.inference.outputs.response }}
+      - name: Restart IIS Site
+        run: Restart-Website -Name "msgapi"
+        shell: pwsh
